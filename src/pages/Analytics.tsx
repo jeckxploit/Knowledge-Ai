@@ -2,7 +2,9 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { FailedQueriesAnalysis } from "@/components/analytics/FailedQueriesAnalysis";
 import { KBCoverageStatus } from "@/components/analytics/KBCoverageStatus";
+import { OfflineOverlay } from "@/components/pwa/OfflineOverlay";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { 
   BarChart3, 
   TrendingUp, 
@@ -58,8 +60,15 @@ const topicDistribution = [
 ];
 
 export default function Analytics() {
+  const { isOnline } = useOnlineStatus();
+
   return (
     <AppLayout>
+      {!isOnline ? (
+        <div className="h-[calc(100vh-10rem)] flex items-center justify-center">
+          <OfflineOverlay featureName="Analytics" variant="inline" />
+        </div>
+      ) : (
       <div className="space-y-6 animate-fade-in">
         {/* Header */}
         <div>
@@ -298,6 +307,7 @@ export default function Analytics() {
           </TabsContent>
         </Tabs>
       </div>
+      )}
     </AppLayout>
   );
 }
