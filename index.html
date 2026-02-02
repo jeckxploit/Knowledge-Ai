@@ -2,7 +2,8 @@
 <html lang="id">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <!-- PWA Viewport: Prevent zoom, stable on mobile -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     
     <!-- App Info -->
     <title>Knowledge Base Analyzer - AI-Powered KB Platform</title>
@@ -19,6 +20,9 @@
     <meta name="msapplication-TileColor" content="#0a0d14" />
     <meta name="msapplication-tap-highlight" content="no" />
     <meta name="format-detection" content="telephone=no" />
+    
+    <!-- Disable pinch zoom and double-tap zoom -->
+    <meta name="touch-action" content="pan-x pan-y" />
     
     <!-- Icons -->
     <link rel="icon" type="image/png" sizes="192x192" href="/pwa-192x192.png" />
@@ -44,6 +48,31 @@
     
     <!-- Prevent zooming -->
     <meta name="HandheldFriendly" content="true" />
+    
+    <!-- Prevent text size adjustment -->
+    <style>
+      /* Disable double-tap zoom */
+      * {
+        touch-action: manipulation;
+      }
+      
+      /* Prevent iOS text size adjustment */
+      html {
+        -webkit-text-size-adjust: 100%;
+        text-size-adjust: 100%;
+      }
+      
+      /* Smooth scrolling */
+      html, body {
+        scroll-behavior: smooth;
+        overscroll-behavior: none;
+      }
+      
+      /* Prevent pull-to-refresh */
+      body {
+        overscroll-behavior-y: contain;
+      }
+    </style>
   </head>
 
   <body>

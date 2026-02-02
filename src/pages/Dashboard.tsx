@@ -16,17 +16,17 @@ import {
 export default function Dashboard() {
   return (
     <AppLayout>
-      <div className="space-y-6 animate-fade-in">
+      <div className="space-y-4 sm:space-y-6 animate-fade-in">
         {/* Page Header */}
         <div>
-          <h1 className="text-2xl font-bold">Dashboard</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="text-xl sm:text-2xl font-bold">Dashboard</h1>
+          <p className="text-sm sm:text-base text-muted-foreground mt-1">
             Overview of your knowledge base and AI performance
           </p>
         </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Stats Grid - Responsive */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           <StatCard
             title="Total Documents"
             value="2,847"
@@ -62,39 +62,39 @@ export default function Dashboard() {
         </div>
 
         {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6">
           {/* Left Column - Charts */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="xl:col-span-2 space-y-4 sm:space-y-6">
             <QueryAnalytics />
             <RecentQueries />
           </div>
 
           {/* Right Column - Status & Topics */}
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {/* Quick Stats */}
             <div className="glass-card rounded-xl p-4">
-              <h3 className="font-semibold mb-4">Processing Status</h3>
-              <div className="space-y-4">
+              <h3 className="font-semibold mb-4 text-sm sm:text-base">Processing Status</h3>
+              <div className="space-y-3 sm:space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <CheckCircle className="w-4 h-4 text-success" />
-                    <span className="text-sm">Indexed Documents</span>
+                    <span className="text-xs sm:text-sm">Indexed Documents</span>
                   </div>
-                  <span className="font-medium">2,734</span>
+                  <span className="font-medium text-sm">2,734</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Clock className="w-4 h-4 text-info animate-pulse" />
-                    <span className="text-sm">Processing</span>
+                    <span className="text-xs sm:text-sm">Processing</span>
                   </div>
-                  <span className="font-medium">12</span>
+                  <span className="font-medium text-sm">12</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Clock className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm">Pending</span>
+                    <span className="text-xs sm:text-sm">Pending</span>
                   </div>
-                  <span className="font-medium">89</span>
+                  <span className="font-medium text-sm">89</span>
                 </div>
               </div>
             </div>
