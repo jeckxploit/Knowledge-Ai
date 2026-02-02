@@ -2,10 +2,11 @@ import { useState, useRef, useEffect } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Send, Sparkles, Settings2, Mic, BookOpen, Trash2 } from "lucide-react";
+import { Send, Sparkles, Settings2, Mic, BookOpen, Trash2, WifiOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAIQuery } from "@/hooks/useAIQuery";
 import { AIMessageCard } from "@/components/ai-query/AIMessageCard";
+import { OfflineOverlay } from "@/components/pwa/OfflineOverlay";
 
 interface AnswerMode {
   id: "concise" | "technical" | "executive";
@@ -31,7 +32,7 @@ export default function AIQuery() {
   const [selectedMode, setSelectedMode] = useState<"concise" | "technical" | "executive">("concise");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
-  const { messages, isLoading, sendQuery, clearMessages } = useAIQuery();
+  const { messages, isLoading, isOnline, sendQuery, clearMessages } = useAIQuery();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -42,7 +43,7 @@ export default function AIQuery() {
   }, [messages]);
 
   const handleSubmit = async () => {
-    if (!input.trim() || isLoading) return;
+    if (!input.trim() || isLoading || !isOnline) return;
     const question = input;
     setInput("");
     await sendQuery(question, selectedMode);
@@ -179,27 +180,40 @@ export default function AIQuery() {
 
           {/* Input Area */}
           <div className="p-4 border-t border-border/50">
+            {/* Offline Warning */}
+            {!isOnline && (
+              <div className="mb-3 flex items-center gap-2 px-3 py-2 rounded-lg bg-warning/10 border border-warning/20 text-warning text-sm">
+                <WifiOff className="w-4 h-4 shrink-0" />
+                <span>Anda sedang offline. Fitur AI tidak tersedia.</span>
+              </div>
+            )}
+            
             <div className="flex items-end gap-3">
               <div className="flex-1 relative">
                 <Textarea
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder="Tanyakan tentang Knowledge Base..."
-                  className="min-h-[56px] max-h-32 resize-none pr-12 bg-secondary/50"
+                  placeholder={isOnline ? "Tanyakan tentang Knowledge Base..." : "Koneksi internet diperlukan..."}
+                  className={cn(
+                    "min-h-[56px] max-h-32 resize-none pr-12 bg-secondary/50",
+                    !isOnline && "opacity-50 cursor-not-allowed"
+                  )}
                   rows={1}
+                  disabled={!isOnline}
                 />
                 <Button
                   variant="ghost"
                   size="icon"
                   className="absolute right-2 bottom-2 h-8 w-8 text-muted-foreground hover:text-foreground"
+                  disabled={!isOnline}
                 >
                   <Mic className="w-4 h-4" />
                 </Button>
               </div>
               <Button 
                 onClick={handleSubmit} 
-                disabled={!input.trim() || isLoading}
+                disabled={!input.trim() || isLoading || !isOnline}
                 className="h-14 px-6 bg-primary hover:bg-primary/90"
               >
                 <Send className="w-5 h-5" />

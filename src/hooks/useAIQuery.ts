@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useOnlineStatus } from "./useOnlineStatus";
 
 interface Source {
   id: string;
@@ -43,9 +44,16 @@ export function useAIQuery() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [sessionId] = useState(() => crypto.randomUUID());
+  const { isOnline } = useOnlineStatus();
 
   const sendQuery = useCallback(async (question: string, answerMode: AnswerMode) => {
     if (!question.trim() || isLoading) return;
+
+    // Check online status before making request
+    if (!isOnline) {
+      toast.error("Tidak ada koneksi internet. Fitur AI membutuhkan koneksi aktif.");
+      return;
+    }
 
     const userMessage: Message = {
       id: crypto.randomUUID(),
@@ -112,10 +120,15 @@ export function useAIQuery() {
     } catch (error) {
       console.error("AI Query error:", error);
       
+      // Check if it's a network error
+      const isNetworkError = error instanceof TypeError && error.message === "Failed to fetch";
+      
       const errorMessage: Message = {
         id: crypto.randomUUID(),
         type: "assistant",
-        content: "Maaf, terjadi kesalahan saat memproses pertanyaan Anda. Silakan coba lagi.",
+        content: isNetworkError 
+          ? "Tidak dapat terhubung ke server. Periksa koneksi internet Anda dan coba lagi."
+          : "Maaf, terjadi kesalahan saat memproses pertanyaan Anda. Silakan coba lagi.",
         confidence: 0,
         isOutOfContext: true,
         timestamp: new Date(),
@@ -125,7 +138,7 @@ export function useAIQuery() {
     } finally {
       setIsLoading(false);
     }
-  }, [isLoading, sessionId]);
+  }, [isLoading, sessionId, isOnline]);
 
   const clearMessages = useCallback(() => {
     setMessages([]);
@@ -134,6 +147,7 @@ export function useAIQuery() {
   return {
     messages,
     isLoading,
+    isOnline,
     sendQuery,
     clearMessages,
     sessionId,
