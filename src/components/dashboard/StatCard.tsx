@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -10,7 +11,7 @@ interface StatCardProps {
   iconColor?: string;
 }
 
-export function StatCard({
+export const StatCard = memo(function StatCard({
   title,
   value,
   change,
@@ -20,14 +21,14 @@ export function StatCard({
 }: StatCardProps) {
   return (
     <div className="stat-card group">
-      <div className="flex items-start justify-between">
-        <div className="space-y-2">
-          <p className="text-sm font-medium text-muted-foreground">{title}</p>
-          <p className="text-3xl font-bold tracking-tight">{value}</p>
+      <div className="flex items-start justify-between gap-2">
+        <div className="space-y-1 sm:space-y-2 min-w-0 flex-1">
+          <p className="text-xs sm:text-sm font-medium text-muted-foreground truncate">{title}</p>
+          <p className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight">{value}</p>
           {change && (
             <p
               className={cn(
-                "text-sm font-medium",
+                "text-xs sm:text-sm font-medium truncate",
                 changeType === "positive" && "text-success",
                 changeType === "negative" && "text-destructive",
                 changeType === "neutral" && "text-muted-foreground"
@@ -39,13 +40,13 @@ export function StatCard({
         </div>
         <div
           className={cn(
-            "p-3 rounded-xl bg-secondary/50 group-hover:scale-110 transition-transform",
+            "p-2 sm:p-3 rounded-lg sm:rounded-xl bg-secondary/50 group-hover:scale-110 transition-transform shrink-0",
             iconColor
           )}
         >
-          <Icon className="w-6 h-6" />
+          <Icon className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6" />
         </div>
       </div>
     </div>
   );
-}
+});
