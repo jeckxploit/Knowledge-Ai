@@ -22,6 +22,81 @@ interface AIResponse {
   confidenceScore: number;
   isOutOfContext: boolean;
   outOfContextReason?: string;
+  completenessLevel: "full" | "partial" | "minimal";
+}
+
+// Rate limiting store (in-memory, resets on function cold start)
+const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
+const RATE_LIMIT_WINDOW_MS = 60000; // 1 minute
+const MAX_REQUESTS_PER_WINDOW = 10;
+
+function checkRateLimit(userId: string): { allowed: boolean; remaining: number } {
+  const now = Date.now();
+  const userLimit = rateLimitStore.get(userId);
+  
+  if (!userLimit || now > userLimit.resetTime) {
+    rateLimitStore.set(userId, { count: 1, resetTime: now + RATE_LIMIT_WINDOW_MS });
+    return { allowed: true, remaining: MAX_REQUESTS_PER_WINDOW - 1 };
+  }
+  
+  if (userLimit.count >= MAX_REQUESTS_PER_WINDOW) {
+    return { allowed: false, remaining: 0 };
+  }
+  
+  userLimit.count++;
+  return { allowed: true, remaining: MAX_REQUESTS_PER_WINDOW - userLimit.count };
+}
+
+// Prompt injection detection patterns
+const INJECTION_PATTERNS = [
+  /ignore\s+(previous|all|above)\s+(instructions?|prompts?)/i,
+  /disregard\s+(previous|all|above)/i,
+  /forget\s+(everything|all|previous)/i,
+  /new\s+instructions?:/i,
+  /system\s*:\s*/i,
+  /\[INST\]/i,
+  /<<SYS>>/i,
+  /\{\{.*\}\}/,
+  /<\|.*\|>/,
+  /jailbreak/i,
+  /bypass\s+(safety|filter|restriction)/i,
+  /act\s+as\s+(if|though)\s+you\s+(are|were)\s+not/i,
+  /pretend\s+(you\s+are|to\s+be)\s+a/i,
+  /roleplay\s+as/i,
+];
+
+function detectPromptInjection(input: string): { isInjection: boolean; pattern?: string } {
+  for (const pattern of INJECTION_PATTERNS) {
+    if (pattern.test(input)) {
+      return { isInjection: true, pattern: pattern.source };
+    }
+  }
+  return { isInjection: false };
+}
+
+// Input validation
+function validateInput(question: string): { valid: boolean; error?: string } {
+  if (!question || typeof question !== 'string') {
+    return { valid: false, error: "Question is required" };
+  }
+  
+  const trimmed = question.trim();
+  
+  if (trimmed.length < 3) {
+    return { valid: false, error: "Pertanyaan terlalu pendek" };
+  }
+  
+  if (trimmed.length > 2000) {
+    return { valid: false, error: "Pertanyaan terlalu panjang (maksimal 2000 karakter)" };
+  }
+  
+  // Check for prompt injection
+  const injectionCheck = detectPromptInjection(trimmed);
+  if (injectionCheck.isInjection) {
+    return { valid: false, error: "Input tidak valid" };
+  }
+  
+  return { valid: true };
 }
 
 // Simple keyword-based relevance scoring (in production, use embeddings)
@@ -66,25 +141,67 @@ serve(async (req) => {
   }
 
   const startTime = Date.now();
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
   try {
     const { question, answerMode = "concise", userId, sessionId } = await req.json();
     
-    if (!question || typeof question !== 'string') {
-      return new Response(JSON.stringify({ error: "Question is required" }), {
+    // Input validation
+    const validation = validateInput(question);
+    if (!validation.valid) {
+      // Log suspicious activity
+      if (userId) {
+        await supabase.from("ai_query_logs").insert({
+          user_id: userId,
+          question: question?.substring(0, 500) || "INVALID_INPUT",
+          status: "blocked",
+          is_out_of_context: true,
+          out_of_context_reason: `Validation failed: ${validation.error}`,
+          processing_time_ms: Date.now() - startTime,
+          session_id: sessionId
+        });
+      }
+      console.warn("Input validation failed:", validation.error, "User:", userId);
+      return new Response(JSON.stringify({ error: validation.error }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
+    }
+
+    // Rate limiting (only for authenticated users)
+    if (userId) {
+      const rateCheck = checkRateLimit(userId);
+      if (!rateCheck.allowed) {
+        console.warn("Rate limit exceeded for user:", userId);
+        await supabase.from("ai_query_logs").insert({
+          user_id: userId,
+          question: question.substring(0, 500),
+          status: "rate_limited",
+          is_out_of_context: true,
+          out_of_context_reason: "Rate limit exceeded",
+          processing_time_ms: Date.now() - startTime,
+          session_id: sessionId
+        });
+        return new Response(JSON.stringify({ 
+          error: "Terlalu banyak permintaan. Tunggu 1 menit.",
+          retryAfter: 60 
+        }), {
+          status: 429,
+          headers: { 
+            ...corsHeaders, 
+            "Content-Type": "application/json",
+            "Retry-After": "60"
+          },
+        });
+      }
     }
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
-
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Retrieve relevant documents from knowledge base
     const { data: documents, error: docsError } = await supabase
@@ -120,7 +237,8 @@ serve(async (req) => {
         contextSnippets: [],
         confidenceScore: 0,
         isOutOfContext: true,
-        outOfContextReason: "Tidak ditemukan dokumen yang relevan dengan pertanyaan"
+        outOfContextReason: "Tidak ditemukan dokumen yang relevan dengan pertanyaan",
+        completenessLevel: "minimal"
       };
     } else {
       // Build context from relevant documents
@@ -206,13 +324,19 @@ ${context}`;
       const avgRelevance = scoredDocs.reduce((sum, d) => sum + d.relevance, 0) / scoredDocs.length;
       const confidenceScore = Math.round(Math.min(avgRelevance + 10, 100));
 
+      // Determine completeness level
+      const completenessLevel: "full" | "partial" | "minimal" = 
+        confidenceScore >= 70 && sources.length >= 2 ? "full" :
+        confidenceScore >= 40 || sources.length >= 1 ? "partial" : "minimal";
+
       aiResponse = {
         summary,
         fullAnswer,
         sources,
         contextSnippets,
         confidenceScore,
-        isOutOfContext: false
+        isOutOfContext: false,
+        completenessLevel
       };
     }
 
