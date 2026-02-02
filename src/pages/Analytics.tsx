@@ -1,5 +1,8 @@
 import { AppLayout } from "@/components/layout/AppLayout";
 import { StatCard } from "@/components/dashboard/StatCard";
+import { FailedQueriesAnalysis } from "@/components/analytics/FailedQueriesAnalysis";
+import { KBCoverageStatus } from "@/components/analytics/KBCoverageStatus";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   BarChart3, 
   TrendingUp, 
@@ -8,7 +11,9 @@ import {
   ThumbsUp,
   ThumbsDown,
   MessageSquare,
-  Target
+  Target,
+  AlertTriangle,
+  Database
 } from "lucide-react";
 import { 
   BarChart, 
@@ -63,9 +68,29 @@ export default function Analytics() {
             Analytics
           </h1>
           <p className="text-muted-foreground mt-1">
-            Performance metrics and usage insights
+            Performance metrics, usage insights & Knowledge Base analysis
           </p>
         </div>
+
+        {/* Tabs for different analytics views */}
+        <Tabs defaultValue="overview" className="space-y-6">
+          <TabsList className="bg-secondary/50">
+            <TabsTrigger value="overview" className="gap-2">
+              <TrendingUp className="w-4 h-4" />
+              Overview
+            </TabsTrigger>
+            <TabsTrigger value="failed-queries" className="gap-2">
+              <AlertTriangle className="w-4 h-4" />
+              Failed Queries
+            </TabsTrigger>
+            <TabsTrigger value="kb-coverage" className="gap-2">
+              <Database className="w-4 h-4" />
+              KB Coverage
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Overview Tab */}
+          <TabsContent value="overview" className="space-y-6">
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -239,6 +264,39 @@ export default function Analytics() {
             </div>
           </div>
         </div>
+          </TabsContent>
+
+          {/* Failed Queries Tab */}
+          <TabsContent value="failed-queries">
+            <FailedQueriesAnalysis />
+          </TabsContent>
+
+          {/* KB Coverage Tab */}
+          <TabsContent value="kb-coverage">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <KBCoverageStatus />
+              <div className="space-y-6">
+                <div className="glass-card rounded-xl p-6">
+                  <h3 className="font-semibold mb-4">Tentang Analisis KB</h3>
+                  <div className="space-y-3 text-sm text-muted-foreground">
+                    <p>
+                      <strong className="text-foreground">Tingkat Cakupan</strong> menunjukkan persentase 
+                      pertanyaan yang berhasil dijawab berdasarkan Knowledge Base.
+                    </p>
+                    <p>
+                      <strong className="text-foreground">Rata-rata Confidence</strong> mengukur 
+                      seberapa yakin sistem terhadap jawaban yang diberikan.
+                    </p>
+                    <p>
+                      <strong className="text-foreground">Dokumen per Departemen</strong> menampilkan 
+                      distribusi dokumen yang tersedia dalam sistem.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </AppLayout>
   );

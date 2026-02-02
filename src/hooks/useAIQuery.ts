@@ -19,6 +19,7 @@ interface AIQueryResponse {
   isOutOfContext: boolean;
   outOfContextReason?: string;
   processingTimeMs: number;
+  completenessLevel?: "full" | "partial" | "minimal";
 }
 
 interface Message {
@@ -32,6 +33,7 @@ interface Message {
   isOutOfContext?: boolean;
   outOfContextReason?: string;
   processingTimeMs?: number;
+  completenessLevel?: "full" | "partial" | "minimal";
   timestamp: Date;
 }
 
@@ -102,6 +104,7 @@ export function useAIQuery() {
         isOutOfContext: data.isOutOfContext,
         outOfContextReason: data.outOfContextReason,
         processingTimeMs: data.processingTimeMs,
+        completenessLevel: data.completenessLevel,
         timestamp: new Date(),
       };
 

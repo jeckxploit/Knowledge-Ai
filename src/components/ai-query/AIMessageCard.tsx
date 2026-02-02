@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
+import { TrustIndicators } from "./TrustIndicators";
 
 interface Source {
   id: string;
@@ -24,6 +25,7 @@ interface AIMessageCardProps {
   isOutOfContext?: boolean;
   outOfContextReason?: string;
   processingTimeMs?: number;
+  completenessLevel?: "full" | "partial" | "minimal";
   onRegenerate?: () => void;
 }
 
@@ -42,8 +44,17 @@ export function AIMessageCard({
   isOutOfContext,
   outOfContextReason,
   processingTimeMs,
+  completenessLevel,
   onRegenerate,
 }: AIMessageCardProps) {
+  // Determine completeness level based on confidence and sources
+  const determineCompleteness = (): "full" | "partial" | "minimal" => {
+    if (completenessLevel) return completenessLevel;
+    if (isOutOfContext) return "minimal";
+    if (confidence >= 70 && sources.length >= 2) return "full";
+    if (confidence >= 40 || sources.length >= 1) return "partial";
+    return "minimal";
+  };
   const [showContext, setShowContext] = useState(false);
   const [feedback, setFeedback] = useState<"positive" | "negative" | null>(null);
 
@@ -91,25 +102,21 @@ export function AIMessageCard({
           </div>
         </div>
 
+        {/* Trust Indicators */}
+        {!isOutOfContext && (
+          <div className="mt-4">
+            <TrustIndicators
+              confidence={confidence}
+              sourcesCount={sources.length}
+              isOutOfContext={isOutOfContext}
+              completenessLevel={determineCompleteness()}
+            />
+          </div>
+        )}
+
         {/* Metadata Bar */}
         {!isOutOfContext && (
-          <div className="flex flex-wrap items-center gap-3 mt-4">
-            {/* Confidence Score */}
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground">Confidence:</span>
-              <Badge variant="outline" className={cn("text-xs", getConfidenceBadgeClass(confidence))}>
-                {confidence}%
-              </Badge>
-            </div>
-
-            {/* Sources Count */}
-            {sources.length > 0 && (
-              <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                <FileText className="w-3 h-3" />
-                {sources.length} sumber dokumen
-              </div>
-            )}
-
+          <div className="flex flex-wrap items-center gap-3 mt-3">
             {/* Processing Time */}
             {processingTimeMs && (
               <span className="text-xs text-muted-foreground">
