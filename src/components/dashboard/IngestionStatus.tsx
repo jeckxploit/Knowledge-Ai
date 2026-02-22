@@ -1,6 +1,8 @@
+import { useState, useEffect } from "react";
 import { FileText, CheckCircle, Clock, AlertCircle, ArrowRight, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 interface IngestionItem {
   id: string;
@@ -11,11 +13,11 @@ interface IngestionItem {
   timestamp: string;
 }
 
-const mockItems: IngestionItem[] = [
-  { id: "1", name: "Q4 Financial Report.pdf", type: "pdf", status: "completed", timestamp: "2 min ago" },
+const initialMockItems: IngestionItem[] = [
+  { id: "1", name: "Q4 Financial Report.pdf", type: "pdf", status: "completed", progress: 100, timestamp: "2 min ago" },
   { id: "2", name: "Employee Handbook v3.docx", type: "docx", status: "processing", progress: 67, timestamp: "5 min ago" },
   { id: "3", name: "Technical Architecture.pdf", type: "pdf", status: "pending", timestamp: "10 min ago" },
-  { id: "4", name: "API Documentation.md", type: "txt", status: "completed", timestamp: "15 min ago" },
+  { id: "4", name: "API Documentation.md", type: "txt", status: "completed", progress: 100, timestamp: "15 min ago" },
   { id: "5", name: "https://docs.company.com", type: "url", status: "failed", timestamp: "20 min ago" },
 ];
 
@@ -41,8 +43,8 @@ const statusConfig = {
     border: "border-border/50",
     label: "Pending"
   },
-  failed: { 
-    icon: AlertCircle, 
+  failed: {
+    icon: AlertCircle,
     className: "text-destructive",
     bg: "bg-destructive/10",
     border: "border-destructive/20",
@@ -58,6 +60,30 @@ const typeConfig = {
 };
 
 export function IngestionStatus() {
+  const [items, setItems] = useState<IngestionItem[]>(initialMockItems);
+
+  // Simulate processing completion
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setItems(prev => prev.map(item => {
+        if (item.id === "2" && item.status === "processing") {
+          // Complete Employee Handbook processing
+          toast.success("Document processed successfully", {
+            description: "Employee Handbook v3.docx has been indexed",
+          });
+          return { ...item, status: "completed", progress: 100, timestamp: "Just now" };
+        }
+        // Move pending to processing
+        if (item.id === "3" && item.status === "pending") {
+          return { ...item, status: "processing", progress: 15 };
+        }
+        return item;
+      }));
+    }, 3000); // Complete after 3 seconds
+
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <div className="glass-card rounded-2xl overflow-hidden group">
       {/* Enhanced Header */}
@@ -81,7 +107,7 @@ export function IngestionStatus() {
 
       {/* Pipeline Items */}
       <div className="divide-y divide-border/50">
-        {mockItems.map((item) => {
+        {items.map((item) => {
           const StatusIcon = statusConfig[item.status].icon;
           const typeStyle = typeConfig[item.type];
           const isProcessing = item.status === "processing";
@@ -175,25 +201,25 @@ export function IngestionStatus() {
             <div className="flex items-center gap-2">
               <div className="w-2.5 h-2.5 rounded-full bg-success animate-pulse" />
               <span className="text-xs text-muted-foreground">
-                <span className="font-semibold text-success">2</span> completed
+                <span className="font-semibold text-success">{items.filter(i => i.status === "completed").length}</span> completed
               </span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-2.5 h-2.5 rounded-full bg-info animate-pulse" />
               <span className="text-xs text-muted-foreground">
-                <span className="font-semibold text-info">1</span> processing
+                <span className="font-semibold text-info">{items.filter(i => i.status === "processing").length}</span> processing
               </span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-2.5 h-2.5 rounded-full bg-muted" />
               <span className="text-xs text-muted-foreground">
-                <span className="font-semibold text-muted-foreground">1</span> pending
+                <span className="font-semibold text-muted-foreground">{items.filter(i => i.status === "pending").length}</span> pending
               </span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-2.5 h-2.5 rounded-full bg-destructive" />
               <span className="text-xs text-muted-foreground">
-                <span className="font-semibold text-destructive">1</span> failed
+                <span className="font-semibold text-destructive">{items.filter(i => i.status === "failed").length}</span> failed
               </span>
             </div>
           </div>
