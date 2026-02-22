@@ -3,15 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <!-- PWA Viewport: Prevent zoom, stable on mobile -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    
-    <!-- App Info -->
-    <title>Knowledge Base Analyzer - AI-Powered KB Platform</title>
-    <meta name="description" content="Platform analisis Knowledge Base berbasis AI untuk pencarian cerdas dan manajemen dokumen perusahaan." />
-    <meta name="author" content="Knowledge Base Analyzer" />
-    
-    <!-- PWA Meta Tags -->
-    <meta name="theme-color" content="#0a0d14" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, shrink-to-fit=no" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -19,35 +11,12 @@
     <meta name="application-name" content="KB Analyzer" />
     <meta name="msapplication-TileColor" content="#0a0d14" />
     <meta name="msapplication-tap-highlight" content="no" />
-    <meta name="format-detection" content="telephone=no" />
+    <meta name="theme-color" content="#0a0d14" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="supported-color-schemes" content="dark" />
     
-    <!-- Disable pinch zoom and double-tap zoom -->
+    <!-- Prevent zoom gestures -->
     <meta name="touch-action" content="pan-x pan-y" />
-    
-    <!-- Icons -->
-    <link rel="icon" type="image/png" sizes="192x192" href="/pwa-192x192.png" />
-    <link rel="icon" type="image/png" sizes="512x512" href="/pwa-512x512.png" />
-    <link rel="apple-touch-icon" sizes="512x512" href="/pwa-512x512.png" />
-    <link rel="mask-icon" href="/pwa-maskable-512x512.png" color="#3B82F6" />
-    
-    <!-- Open Graph -->
-    <meta property="og:title" content="Knowledge Base Analyzer" />
-    <meta property="og:description" content="Platform analisis Knowledge Base berbasis AI" />
-    <meta property="og:type" content="website" />
-    <meta property="og:image" content="/pwa-512x512.png" />
-    <meta property="og:site_name" content="KB Analyzer" />
-    
-    <!-- Twitter -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Knowledge Base Analyzer" />
-    <meta name="twitter:description" content="Platform analisis Knowledge Base berbasis AI" />
-    <meta name="twitter:image" content="/pwa-512x512.png" />
-    
-    <!-- Splash Screens for iOS -->
-    <link rel="apple-touch-startup-image" href="/pwa-512x512.png" />
-    
-    <!-- Prevent zooming -->
-    <meta name="HandheldFriendly" content="true" />
     
     <!-- Prevent text size adjustment -->
     <style>
@@ -60,19 +29,67 @@
       html {
         -webkit-text-size-adjust: 100%;
         text-size-adjust: 100%;
-      }
-      
-      /* Smooth scrolling */
-      html, body {
-        scroll-behavior: smooth;
-        overscroll-behavior: none;
+        -moz-text-size-adjust: 100%;
       }
       
       /* Prevent pull-to-refresh */
       body {
         overscroll-behavior-y: contain;
       }
+      
+      /* Smooth scrolling */
+      html {
+        scroll-behavior: smooth;
+      }
+      
+      /* Prevent zoom on input focus */
+      input, select, textarea {
+        font-size: 16px !important;
+      }
     </style>
+
+    <!-- App Info -->
+    <title>Knowledge Base Analyzer - AI-Powered KB Platform</title>
+    <meta name="description" content="Platform analisis Knowledge Base berbasis AI untuk pencarian cerdas dan manajemen dokumen perusahaan." />
+    <meta name="author" content="Knowledge Base Analyzer" />
+
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#0a0d14" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="KB Analyzer" />
+    <meta name="application-name" content="KB Analyzer" />
+    <meta name="msapplication-TileColor" content="#0a0d14" />
+    <meta name="msapplication-tap-highlight" content="no" />
+    <meta name="format-detection" content="telephone=no" />
+
+    <!-- Disable pinch zoom and double-tap zoom -->
+    <meta name="touch-action" content="pan-x pan-y" />
+
+    <!-- Icons -->
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192x192.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/icon-512x512.png" />
+    <link rel="apple-touch-icon" sizes="192x192" href="/icon-192x192.png" />
+    <link rel="apple-touch-icon" sizes="512x512" href="/icon-512x512.png" />
+    <link rel="mask-icon" href="/icon-512x512.png" color="#3B82F6" />
+    <link rel="manifest" href="/manifest.webmanifest" crossorigin="use-credentials" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Knowledge Base Analyzer" />
+    <meta property="og:description" content="Platform analisis Knowledge Base berbasis AI" />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="/icon-512x512.png" />
+    <meta property="og:site_name" content="KB Analyzer" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Knowledge Base Analyzer" />
+    <meta name="twitter:description" content="Platform analisis Knowledge Base berbasis AI" />
+    <meta name="twitter:image" content="/icon-512x512.png" />
+
+    <!-- Splash Screens for iOS -->
+    <link rel="apple-touch-startup-image" href="/icon-512x512.png" />
   </head>
 
   <body>

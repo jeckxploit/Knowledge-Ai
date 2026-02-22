@@ -1,4 +1,4 @@
-import { FileText, CheckCircle, Clock, AlertCircle, ArrowRight } from "lucide-react";
+import { FileText, CheckCircle, Clock, AlertCircle, ArrowRight, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
@@ -20,62 +20,187 @@ const mockItems: IngestionItem[] = [
 ];
 
 const statusConfig = {
-  completed: { icon: CheckCircle, className: "text-success" },
-  processing: { icon: Clock, className: "text-info animate-pulse" },
-  pending: { icon: Clock, className: "text-muted-foreground" },
-  failed: { icon: AlertCircle, className: "text-destructive" },
+  completed: { 
+    icon: CheckCircle, 
+    className: "text-success",
+    bg: "bg-success/10",
+    border: "border-success/20",
+    label: "Completed"
+  },
+  processing: { 
+    icon: Loader2, 
+    className: "text-info animate-spin",
+    bg: "bg-info/10",
+    border: "border-info/20",
+    label: "Processing"
+  },
+  pending: { 
+    icon: Clock, 
+    className: "text-muted-foreground",
+    bg: "bg-muted/20",
+    border: "border-border/50",
+    label: "Pending"
+  },
+  failed: { 
+    icon: AlertCircle, 
+    className: "text-destructive",
+    bg: "bg-destructive/10",
+    border: "border-destructive/20",
+    label: "Failed"
+  },
 };
 
-const typeColors = {
-  pdf: "bg-red-500/10 text-red-400",
-  docx: "bg-blue-500/10 text-blue-400",
-  txt: "bg-green-500/10 text-green-400",
-  url: "bg-purple-500/10 text-purple-400",
+const typeConfig = {
+  pdf: { icon: "PDF", color: "bg-red-500/15 text-red-400 border-red-500/20" },
+  docx: { icon: "DOC", color: "bg-blue-500/15 text-blue-400 border-blue-500/20" },
+  txt: { icon: "TXT", color: "bg-green-500/15 text-green-400 border-green-500/20" },
+  url: { icon: "URL", color: "bg-purple-500/15 text-purple-400 border-purple-500/20" },
 };
 
 export function IngestionStatus() {
   return (
-    <div className="glass-card rounded-xl">
-      <div className="p-4 border-b border-border/50 flex items-center justify-between">
-        <div>
-          <h3 className="font-semibold">Ingestion Pipeline</h3>
-          <p className="text-sm text-muted-foreground">Recent document processing</p>
+    <div className="glass-card rounded-2xl overflow-hidden group">
+      {/* Enhanced Header */}
+      <div className="relative p-5 border-b border-border/50 bg-gradient-to-r from-warning/5 via-transparent to-info/5">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-warning/5 rounded-full blur-2xl" />
+        <div className="relative z-10 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-warning/20 group-hover:scale-110 transition-transform duration-300">
+              <FileText className="w-5 h-5 text-warning" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-lg">Ingestion Pipeline</h3>
+              <p className="text-sm text-muted-foreground">Real-time document processing status</p>
+            </div>
+          </div>
+          <Button variant="ghost" size="sm" className="gap-2 text-primary hover:bg-primary/10">
+            View All <ArrowRight className="w-4 h-4" />
+          </Button>
         </div>
-        <Button variant="ghost" size="sm" className="gap-2 text-primary">
-          View All <ArrowRight className="w-4 h-4" />
-        </Button>
       </div>
+
+      {/* Pipeline Items */}
       <div className="divide-y divide-border/50">
         {mockItems.map((item) => {
           const StatusIcon = statusConfig[item.status].icon;
+          const typeStyle = typeConfig[item.type];
+          const isProcessing = item.status === "processing";
+          
           return (
-            <div key={item.id} className="p-4 flex items-center gap-4 hover:bg-secondary/30 transition-colors">
-              <div className={cn("p-2 rounded-lg", typeColors[item.type])}>
-                <FileText className="w-4 h-4" />
+            <div 
+              key={item.id} 
+              className={cn(
+                "p-4 flex items-center gap-4 transition-all duration-300 cursor-pointer",
+                isProcessing ? "bg-info/5" : "hover:bg-secondary/30"
+              )}
+            >
+              {/* Type Badge */}
+              <div className={cn(
+                "flex items-center justify-center w-12 h-12 rounded-xl border font-bold text-xs shrink-0 transition-transform group-hover/item:scale-105",
+                typeStyle.color
+              )}>
+                {typeStyle.icon}
               </div>
+              
+              {/* Document Info */}
               <div className="flex-1 min-w-0">
-                <p className="font-medium truncate">{item.name}</p>
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="text-xs uppercase font-medium text-muted-foreground">
+                <div className="flex items-center gap-2 mb-1">
+                  <p className="font-medium truncate text-foreground/90">{item.name}</p>
+                  {isProcessing && (
+                    <span className="flex items-center gap-1 text-xs text-info">
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                      Processing...
+                    </span>
+                  )}
+                </div>
+                
+                <div className="flex items-center gap-3">
+                  <span className={cn(
+                    "text-xs uppercase font-semibold px-2 py-0.5 rounded-md border",
+                    typeStyle.color
+                  )}>
                     {item.type}
                   </span>
+                  
+                  {/* Progress Bar for processing items */}
                   {item.progress !== undefined && (
-                    <div className="flex-1 max-w-24 h-1.5 bg-secondary rounded-full overflow-hidden">
+                    <div className="flex-1 max-w-32 h-2 bg-secondary/50 rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-info rounded-full transition-all"
+                        className={cn(
+                          "h-full rounded-full transition-all duration-500 relative overflow-hidden",
+                          isProcessing ? "bg-gradient-to-r from-info to-accent" : "bg-secondary"
+                        )}
                         style={{ width: `${item.progress}%` }}
-                      />
+                      >
+                        {/* Animated shimmer on progress bar */}
+                        {isProcessing && (
+                          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full animate-[shimmer_1s_infinite]" />
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>
               </div>
-              <div className="flex items-center gap-3">
-                <span className="text-xs text-muted-foreground">{item.timestamp}</span>
-                <StatusIcon className={cn("w-5 h-5", statusConfig[item.status].className)} />
+              
+              {/* Status & Timestamp */}
+              <div className="flex items-center gap-4 shrink-0">
+                <div className="text-right hidden sm:block">
+                  <p className={cn(
+                    "text-xs font-semibold uppercase tracking-wide",
+                    statusConfig[item.status].className
+                  )}>
+                    {statusConfig[item.status].label}
+                  </p>
+                  <span className="text-xs text-muted-foreground">{item.timestamp}</span>
+                </div>
+                
+                {/* Status Icon */}
+                <div className={cn(
+                  "p-2.5 rounded-xl border transition-all duration-300",
+                  statusConfig[item.status].bg,
+                  statusConfig[item.status].border
+                )}>
+                  <StatusIcon className={cn("w-5 h-5", statusConfig[item.status].className)} />
+                </div>
               </div>
             </div>
           );
         })}
+      </div>
+
+      {/* Pipeline Summary Footer */}
+      <div className="px-5 py-4 border-t border-border/50 bg-gradient-to-r from-success/5 via-transparent to-info/5">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <div className="w-2.5 h-2.5 rounded-full bg-success animate-pulse" />
+              <span className="text-xs text-muted-foreground">
+                <span className="font-semibold text-success">2</span> completed
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-2.5 h-2.5 rounded-full bg-info animate-pulse" />
+              <span className="text-xs text-muted-foreground">
+                <span className="font-semibold text-info">1</span> processing
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-2.5 h-2.5 rounded-full bg-muted" />
+              <span className="text-xs text-muted-foreground">
+                <span className="font-semibold text-muted-foreground">1</span> pending
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-2.5 h-2.5 rounded-full bg-destructive" />
+              <span className="text-xs text-muted-foreground">
+                <span className="font-semibold text-destructive">1</span> failed
+              </span>
+            </div>
+          </div>
+          <Button variant="ghost" size="sm" className="text-xs text-primary hover:bg-primary/10">
+            Manage Pipeline
+          </Button>
+        </div>
       </div>
     </div>
   );

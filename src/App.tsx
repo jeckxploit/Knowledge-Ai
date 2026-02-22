@@ -15,9 +15,11 @@ const AIQuery = lazy(() => import("./pages/AIQuery"));
 const KnowledgeBase = lazy(() => import("./pages/KnowledgeBase"));
 const Ingestion = lazy(() => import("./pages/Ingestion"));
 const Analytics = lazy(() => import("./pages/Analytics"));
+const QueryLogs = lazy(() => import("./pages/QueryLogs"));
 const UsersRoles = lazy(() => import("./pages/UsersRoles"));
 const Governance = lazy(() => import("./pages/Governance"));
 const SettingsPage = lazy(() => import("./pages/Settings"));
+const Profile = lazy(() => import("./pages/Profile"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({
@@ -80,15 +82,22 @@ const App = () => (
             } 
           />
           <Route path="/documents" element={<Navigate to="/knowledge" replace />} />
-          <Route 
-            path="/analytics" 
+          <Route
+            path="/analytics"
             element={
               <Suspense fallback={<PageLoader variant="dashboard" />}>
                 <Analytics />
               </Suspense>
-            } 
+            }
           />
-          <Route path="/query-logs" element={<Navigate to="/analytics" replace />} />
+          <Route
+            path="/query-logs"
+            element={
+              <Suspense fallback={<PageLoader variant="list" />}>
+                <QueryLogs />
+              </Suspense>
+            }
+          />
           <Route 
             path="/users" 
             element={
@@ -105,13 +114,21 @@ const App = () => (
               </Suspense>
             } 
           />
-          <Route 
-            path="/settings" 
+          <Route
+            path="/settings"
             element={
               <Suspense fallback={<PageLoader variant="form" />}>
                 <SettingsPage />
               </Suspense>
-            } 
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <Suspense fallback={<PageLoader variant="form" />}>
+                <Profile />
+              </Suspense>
+            }
           />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route 
