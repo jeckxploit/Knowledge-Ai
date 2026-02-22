@@ -134,8 +134,8 @@ export function IngestionStatus() {
                   <p className="font-medium truncate text-foreground/90">{item.name}</p>
                   {isProcessing && (
                     <span className="flex items-center gap-1 text-xs text-info">
-                      <Loader2 className="w-3 h-3 animate-spin" />
-                      Processing...
+                      <Loader2 className="w-3 h-3 animate-spin shrink-0" />
+                      <span className="whitespace-nowrap">Processing...</span>
                     </span>
                   )}
                 </div>
