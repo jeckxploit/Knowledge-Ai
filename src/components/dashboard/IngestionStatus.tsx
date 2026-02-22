@@ -130,13 +130,13 @@ export function IngestionStatus() {
               
               {/* Document Info */}
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
+                <div className="flex items-center gap-2 mb-1 flex-wrap">
                   <p className="font-medium truncate text-foreground/90">{item.name}</p>
                   {isProcessing && (
-                    <span className="flex items-center gap-1 text-xs text-info">
-                      <Loader2 className="w-3 h-3 animate-spin shrink-0" />
-                      <span className="whitespace-nowrap">Processing...</span>
-                    </span>
+                    <div className="flex items-center gap-1.5 text-xs text-info shrink-0">
+                      <Loader2 className="w-3 h-3 animate-spin shrink-0" style={{ animation: 'spin 1s linear infinite' }} />
+                      <span className="whitespace-nowrap font-medium">Processing...</span>
+                    </div>
                   )}
                 </div>
                 
