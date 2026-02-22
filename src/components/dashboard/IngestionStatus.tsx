@@ -29,9 +29,9 @@ const statusConfig = {
     border: "border-success/20",
     label: "Completed"
   },
-  processing: { 
-    icon: Loader2, 
-    className: "text-info animate-spin",
+  processing: {
+    icon: Loader2,
+    className: "text-info",
     bg: "bg-info/10",
     border: "border-info/20",
     label: "Processing"
@@ -186,7 +186,7 @@ export function IngestionStatus() {
                   statusConfig[item.status].bg,
                   statusConfig[item.status].border
                 )}>
-                  <StatusIcon className={cn("w-5 h-5", statusConfig[item.status].className)} />
+                  <StatusIcon className={cn("w-5 h-5", statusConfig[item.status].className, isProcessing && "animate-spin")} />
                 </div>
               </div>
             </div>
